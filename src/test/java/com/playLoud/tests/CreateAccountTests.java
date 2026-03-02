@@ -1,10 +1,8 @@
 package com.playLoud.tests;
 
 import com.playLoud.core.TestBase;
-import com.playLoud.dto.users.ErrorDto;
 import com.playLoud.dto.users.UsersRequestDto;
 import com.playLoud.dto.users.UsersResponseDto;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -18,12 +16,7 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createAccountSuccessTest() {
-        UsersResponseDto responseDto = given()
-                .contentType(ContentType.JSON)
-                .body(requestDto)
-                .when()
-                .post(USERS_PATH)
-                .then()
+        UsersResponseDto responseDto = register(requestDto)
                 .assertThat().statusCode(201)
                 .extract().response().as(UsersResponseDto.class);
 
@@ -35,12 +28,7 @@ public class CreateAccountTests extends TestBase {
     @Test
     public void createExistedEmailErrorTest() {
       //  ErrorDto errorDto =
-                given()
-                .contentType(ContentType.JSON)
-                .body(UsersRequestDto.of(NAME, EMAIL, PASSWORD))
-                .when()
-                .post(USERS_PATH)
-                .then()
+                register(UsersRequestDto.of(NAME, EMAIL, PASSWORD))
                 .assertThat().statusCode(409)
                 .assertThat().body("message",containsString("email already exists"))
              //   .extract().response().as(ErrorDto.class)
@@ -52,14 +40,9 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createAccountWithInvalidPasswordErrorTest() {
-        given()
-                .contentType(ContentType.JSON)
-                .body(UsersRequestDto.of(NAME,
-                        "test" + System.currentTimeMillis() + "@gm.com",
-                "123"))
-                .when()
-                .post(USERS_PATH)
-                .then()
+        register(UsersRequestDto.of(NAME,
+                "test" + System.currentTimeMillis() + "@gm.com",
+        "123"))
                 .assertThat().statusCode(400)
                 .assertThat().body("error",equalTo("Bad Request"));
     }
