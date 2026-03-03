@@ -3,7 +3,11 @@ package com.playLoud.tests;
 import com.playLoud.core.TestBase;
 import com.playLoud.dto.users.UsersRequestDto;
 import com.playLoud.dto.users.UsersResponseDto;
+import com.playLoud.utils.DbData;
 import org.junit.jupiter.api.Test;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
@@ -16,13 +20,20 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createAccountSuccessTest() {
-        UsersResponseDto responseDto = register(requestDto)
+      //  UsersResponseDto responseDto =
+        int userId = register(requestDto)
                 .assertThat().statusCode(201)
-                .extract().response().as(UsersResponseDto.class);
+                .extract().path("id");
+        //        .extract().response().as(UsersResponseDto.class);
+        try {
+            PreparedStatement deleteStmt = connection.prepareStatement(DbData.queryDelete);
+            deleteStmt.setInt(1, userId);
 
-        System.out.println(responseDto.id() + " *** " + responseDto.name());
-
-        //68 *** Oliver
+            deleteStmt.executeUpdate();
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        //  System.out.println(responseDto.id() + " *** " + responseDto.name());
     }
 
     @Test
